@@ -1,6 +1,8 @@
 from utils import get_keyboard, get_user_emo, is_cat
 import logging
 import os
+from telegram.ext import ConversationHandler
+from telegram import ReplyKeyboardRemove, ReplyKeyboardMarkup, ParseMode
 from glob import glob
 from random import choice
 
@@ -27,8 +29,7 @@ def send_cat_picture(bot, update, user_data):
         cat_list = glob("images/*kot*.jpg")
         cat_pic = choice(cat_list)
         bot.send_photo(chat_id=update.message.chat.id, photo=open(cat_pic, "rb"), reply_markup=get_keyboard())
-
-
+ 
 def get_contact(bot, update, user_data):
     print(update.message.contact)
     update.message.reply_text("Готово: {}".format(get_user_emo(user_data)), reply_markup=get_keyboard())
@@ -59,5 +60,54 @@ def check_user_photo(bot, update, user_data):
         update.message.reply_text("К сожалению, котиков не нашел!")
         os.remove(filename)
         
+
+def anketa_start(bot, update, user_data):
+    update.message.reply_text("Как вас зовут? Напишите имя и фамилию", reply_markup=ReplyKeyboardRemove())
+    return "name"
+
+def anketa_get_name(bot, update, user_data):
+    user_name = update.message.text
+    if len(user_name.split(" ")) != 2:
+        update.message.reply_text("Вы ввели не имя! Подумайте ещё!")
+        return "name"
+    else:
+        user_data["anketa_name"] = user_name
+        reply_Keyboard = [["1", "2", "3", "4", "5"]] 
+
+        update.message.reply_text(
+        "Оцените бота от 1 до 5",
+        reply_markup = ReplyKeyboardMarkup(reply_Keyboard, one_time_keyboard=True)
+        )
+        return "raiting"
+
+def anketa_rating(bot, update, user_data):
+    user_data['anketa_rating'] = update.message.text
+    update.message.reply_text("""Оставьте свой комментарий 
+или введите /cancel для завершения""")
+    return "comment"
+
+
+def anketa_comment(bot, update, user_data):
+    user_data['anketa_comment'] = update.message.text
+    user_text = """
+<b>Имя Фамилия:</b> {anketa_name}
+<b>Оценка:</b> {anketa_rating}
+<b>Комментарий:</b> {anketa_comment}""".format(**user_data)
+    update.message.reply_text(user_text, reply_markup=get_keyboard(), parse_mode=ParseMode.HTML)
+    return ConversationHandler.END
+
+
+def anketa_skip_comment(bot, update, user_data):
+    user_text = """
+<b>Имя Фамилия:</b> {anketa_name}
+<b>Оценка:</b> {anketa_rating}""".format(**user_data)
+    update.message.reply_text(user_text, reply_markup=get_keyboard(), parse_mode = ParseMode.HTML)
+    return ConversationHandler.END
+
+
+def dont_know(bot, update, user_data):
+    update.message.reply_text("Не поняяяятнооо....")
+
+
 
 
