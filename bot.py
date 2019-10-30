@@ -10,6 +10,15 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s',
                     filename='bot.log'
                     )
 
+def my_test(bot, job):
+    bot.sendMessage(chat_id=596047349, text="!!!Не лезь в инстаграмм!!!")
+    job.interval -= 9
+    if job.interval < 10:
+        bot.sendMessage(chat_id=596047349, text="!!!ну и как хочешь!!!")
+        job.schedule_removal()
+
+
+
 
 def main():
     mybot = Updater(settings.API_KEY, request_kwargs=settings.PROXY)
@@ -17,6 +26,8 @@ def main():
     logging.info("bot poschol")
     
     dp = mybot.dispatcher
+
+    mybot.job_queue.run_repeating(my_test, interval=60)
     
     
     anketa = ConversationHandler(

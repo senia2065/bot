@@ -7,6 +7,7 @@ from glob import glob
 from random import choice
 
 def hallou(bot, update, user_data):
+    print(update.message.chat_id)
     emo = get_user_emo(user_data)
     user_data["emo"] = emo
     text = "Привет, {} {}".format(update.message.chat.first_name, emo)
